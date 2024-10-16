@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Details - Boltx</title>
+    <link rel="icon" href="assets/img/favicon.png">
+    <!-- CSS only -->
+    <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">
+    <!-- fancybox -->
+    <link rel="stylesheet" href="assets/css/jquery.fancybox.min.css">
+    <link rel="stylesheet" href="assets/css/slick.css">
+    <link rel="stylesheet" href="assets/css/slick-theme.css">
+    <link rel="stylesheet" href="assets/css/swiper.css">
+    <link rel="stylesheet" href="assets/css/fontawesome.min.css">
+    <link rel="stylesheet" href="assets/font/flaticon_mycollection.css">
+    <!-- style -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- responsive -->
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    <script src="assets/js/jquery-3.6.0.min.js"></script>
+    <script src="assets/js/preloader.js"></script>
+    <script src="./assets/config.js"></script>
+</head>
+<body>
+    <div class="preloader">
+        <div id="loader"></div>
+    </div>
+
+    <header>
+        <!-- Add your existing header content here -->
+    </header>
+    <style>
+        .blog-images-slider {
+            margin-bottom: 30px;
+        }
+        .slider-item img {
+            width: 100%;
+            height: 400px; /* Fixed height */
+            object-fit: cover; /* Maintain aspect ratio */
+            border-radius: 10px;
+        }
+        .slick-dots {
+            bottom: 15px;
+        }
+        .slick-dots li button:before {
+            font-size: 12px;
+            color: white;
+        }
+        </style>
+
+    <section id="banner-section" class="bannr">
+        <div class="container">
+            <div class="bannr-text">
+                <h2>Blog Details</h2>
+                <p>Practical renewable energy technology that reduces costs and helps the environment</p>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="our-blog.html">Our Blog</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Blog Details</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    <section class="gap our-blog">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="blog">
+                        <div class="admin">
+                            <!-- <img src="https://via.placeholder.com/80x80" alt="Author Image" class="rounded-circle"> -->
+                            <div>
+                                <h5 id="blog-date">Date</h5>
+                                <h6 id="blog-author">By Author</h6>
+                            </div>
+                        </div>
+                        <h2 id="blog-title"></h2>
+                        <!-- Image Slider for blog images -->
+                        <div class="blog-images-slider">
+                            <div class="slider" id="blog-image-slider">
+                                <!-- Images will be dynamically inserted here -->
+                            </div>
+                        </div>
+                        <div id="blog-content"></div>
+
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="sidebar">
+                        <h3>Recent Posts</h3>
+                        <ul class="recent-post" id="recentPosts">
+                            <!-- Recent posts will be dynamically inserted here -->
+                        </ul>
+                    </div>
+                    <!-- Add more sidebar content as needed -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="background-image: url(assets/img/footer-line.png);">
+        <!-- Add your existing footer content here -->
+    </footer>
+
+    <script>
+    // Get the blog ID from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const blogId = urlParams.get('id');
+
+    if (blogId) {
+        // Fetch the blog details from the server
+        fetch(`http://localhost:5000/api/blogs/${blogId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Blog not found');
+                }
+                return response.json();
+            })
+            .then(blog => {
+                // Set the banner background image
+                `${baseUrl}/services`
+                const mainImageUrl = blog.mainImage ? `${baseUrl}/${blog.mainImage.replace(/\\/g, '/')}` : 'https://via.placeholder.com/1920x679';
+                document.getElementById('banner-section').style.backgroundImage = `url(${mainImageUrl})`;
+                
+                // Populate the blog details in your HTML
+                document.getElementById('blog-title').innerText = blog.title;
+                document.getElementById('blog-date').innerText = new Date(blog.createdAt).toLocaleDateString();
+                document.getElementById('blog-author').innerText = `By ${blog.author}`;
+                document.getElementById('blog-content').innerHTML = blog.content;
+
+                // Populate the image slider
+                if (blog.images && blog.images.length > 0) {
+                    const imageSlider = document.getElementById('blog-image-slider');
+                    imageSlider.innerHTML = ''; // Clear previous content
+
+                    blog.images.forEach(image => {
+                        const imageUrl = `${baseUrl}/${image.replace(/\\/g, '/')}`;
+                        const slideItem = `
+                            <div class="slider-item">
+                                <img src="${imageUrl}" alt="Blog Image" class="img-fluid">
+                            </div>
+                        `;
+                        imageSlider.innerHTML += slideItem;
+                    });
+
+                    // Initialize the Slick slider after the images have been loaded
+                    $('#blog-image-slider').slick({
+                        infinite: true,
+                        slidesToShow: 1,
+                        slidesToScroll: 1,
+                        dots: true,
+                        arrows: true,
+                        autoplay: true,
+                        autoplaySpeed: 3000
+                    });
+                }
+
+                // Handle comments, recent posts, etc...
+            })
+            .catch(error => {
+                console.error('Error fetching blog:', error);
+                document.getElementById('blog-content').innerText = 'Error loading blog details.';
+            });
+    } else {
+        document.getElementById('blog-content').innerText = 'No blog ID provided.';
+    }
+
+// Fetch and display recent posts
+async function fetchRecentPosts() {
+    try {
+        
+        const response = await fetch(`${baseUrl}/api/blogs`);
+        const blogPosts = await response.json();
+
+        // Sort posts by createdAt in descending order (most recent first)
+        const sortedPosts = blogPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        // Get the most recent 3 posts
+        const recentPosts = sortedPosts.slice(0, 3);
+
+        // Generate the HTML for the recent posts
+        const recentPostsHtml = recentPosts.map(post => {
+            const imageUrl = post.mainImage ? `${baseUrl}/${post.mainImage}` : 'https://via.placeholder.com/366x173';
+            return `
+                <li>
+                    <figure>
+                        <img src="${imageUrl}" alt="${post.title}">
+                    </figure>
+                    <a href="blog-details.html?id=${post._id}">${post.title}</a>
+                    <h6>${new Date(post.createdAt).toLocaleDateString()}</h6>
+                </li>
+            `;
+        }).join('');
+
+        document.getElementById('recentPosts').innerHTML = recentPostsHtml;
+    } catch (error) {
+        console.error('Error fetching recent posts:', error);
+    }
+}
+
+fetchRecentPosts();
+
+    </script>
+
+    <!-- Bootstrap Js -->
+    <script src="assets/js/bootstrap.min.js"></script>
+    <!-- fancybox -->
+    <script src="assets/js/jquery.fancybox.min.js"></script>
+    <script src="assets/js/slick.min.js"></script>
+    <script src="assets/js/swiper.js"></script>
+    <script src="assets/js/custom.js"></script>
+
+    <!-- Slider CSS -->
+
+
+</body>
+</html>

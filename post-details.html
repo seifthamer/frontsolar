@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boltx - Blog Details</title>
+  <link rel="icon" href="assets/img/favicon.png">
+  <!-- CSS only -->
+  <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">
+  <!-- fancybox -->
+  <link rel="stylesheet" href="assets/css/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="assets/css/slick.css">
+  <link rel="stylesheet" href="assets/css/slick-theme.css">
+  <link rel="stylesheet" href="assets/css/swiper.css">
+  <link rel="stylesheet" href="assets/css/fontawesome.min.css">
+  <link rel="stylesheet" href="assets/font/flaticon_mycollection.css">
+  <!-- style -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <!-- responsive -->
+  <link rel="stylesheet" href="assets/css/responsive.css"> 
+  <script src="assets/js/jquery-3.6.0.min.js"></script>
+  <script src="assets/js/preloader.js"></script>
+</head>
+<body>
+<div class="preloader">
+  <div id="loader"></div>
+</div> 
+<header>
+  <!-- Your existing header content -->
+</header>
+<section style="background-image: url(https://via.placeholder.com/1920x679);" class="bannr">
+  <div class="container">
+    <div class="bannr-text">
+      <h2>Blog Details</h2>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Blog Details</li>
+      </ol>
+    </div>
+  </div>
+</section>
+<section class="gap blog-details">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8" id="blogDetails">
+        <!-- Blog details will be dynamically inserted here -->
+      </div>
+      <div class="col-lg-4">
+        <div class="sidebar">
+          <h3>Recent Posts</h3>
+          <ul class="recent-post" id="recentPosts">
+            <!-- Recent posts will be dynamically inserted here -->
+          </ul>
+        </div>
+        <!-- Other sidebar content -->
+      </div>
+    </div>
+  </div>
+</section>
+<footer style="background-image: url(assets/img/footer-line.png);">
+  <!-- Your existing footer content -->
+</footer>
+
+<script>
+// Function to get query parameter by name
+function getQueryParam(param) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(param);
+}
+
+// Function to fetch blog details using fetch
+async function fetchBlogDetails() {
+  const blogId = getQueryParam('id');
+  if (!blogId) {
+    document.getElementById('blogDetails').innerHTML = '<p>No blog post specified.</p>';
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const post = await response.json();
+
+    const blogDetailsHtml = `
+      <div class="blog-detail">
+        <div class="blog-img">
+          <figure>
+            <img src="${post.images[0] || 'https://via.placeholder.com/873x455'}" alt="${post.title}">
+          </figure>
+        </div>
+        <div class="admin">
+          <img src="https://via.placeholder.com/80x80" alt="admin">
+          <div>
+            <h5>${new Date(post.createdAt).toLocaleDateString()}</h5>
+            <h6>By Admin</h6>
+          </div>
+        </div>
+        <h2>${post.title}</h2>
+        <p>${post.content}</p>
+      </div>
+    `;
+    document.getElementById('blogDetails').innerHTML = blogDetailsHtml;
+
+    // Update recent posts in sidebar
+    const recentPosts = post.recentPosts.slice(0, 3); // Assuming recentPosts is part of the API response
+    const recentPostsHtml = recentPosts.map(recent => `
+      <li>
+        <figure>
+          <img src="${recent.images[0] || 'https://via.placeholder.com/366x173'}" alt="${recent.title}">
+        </figure>
+        <a href="blog-details.html?id=${recent._id}">${recent.title}</a>
+        <h6>${new Date(recent.createdAt).toLocaleDateString()}</h6>
+      </li>
+    `).join('');
+    document.getElementById('recentPosts').innerHTML = recentPostsHtml;
+
+  } catch (error) {
+    console.error('Error fetching blog details:', error);
+    document.getElementById('blogDetails').innerHTML = '<p>Error loading blog details. Please try again later.</p>';
+  }
+}
+
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', fetchBlogDetails);
+</script>
+
+<!-- Bootstrap Js -->
+<script src="assets/js/bootstrap.min.js"></script>
+<!-- fancybox -->
+<script src="assets/js/jquery.fancybox.min.js"></script>
+<script src="assets/js/slick.min.js"></script>
+<script src="assets/js/swiper.js"></script>
+<script src="assets/js/custom.js"></script>
+</body>
+</html>
